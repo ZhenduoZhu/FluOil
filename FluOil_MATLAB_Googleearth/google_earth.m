@@ -22,7 +22,7 @@ function varargout = google_earth(varargin)
 
 % Edit the above text to modify the response to help google_earth
 
-% Last Modified by GUIDE v2.5 08-Oct-2019 21:18:28
+% Last Modified by GUIDE v2.5 19-Jul-2019 16:41:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -220,11 +220,9 @@ pathname=getappdata(handleResults,'pathname');
 ResultsSim=getappdata(handleResults,'ResultsSim');
 selected_life_stage=getappdata(handleResults, 'selected_life_stage');
 
-X=ResultsSim.X;
-%Xi=X(end,:);
-Xi=mean(X(end,:)); % YL
+X=ResultsSim.X;Xi=min(min(X));
 %T2_Hatching=ResultsSim.T2_Hatching;
-if isfield(ResultsSim, 'T2_Gas_bladder')==0 %This is for results files from previous FluOil versions
+if isfield(ResultsSim, 'T2_Gas_bladder')==0%This is for results files from previous FluOil versions
     T2_Gas_bladder=0;
 else
     T2_Gas_bladder=ResultsSim.T2_Gas_bladder;
@@ -241,12 +239,12 @@ Spawning_Location=[Lat_susp Lon_susp];
 %%
 
 %% Convert s and n to x and y
-% [X_at_hatching,Xsusp,Xbot,CumlDistance]=eggs_at_hatching();
+%[X_at_hatching,Xsusp,Xbot,CumlDistance]=eggs_at_hatching();
 % Determine the selected data set.
 str=get(handles.FluOil_results_menu, 'String');
 val=get(handles.FluOil_results_menu,'Value');
 % Set current data to the selected data set.
-if isfield(ResultsSim, 'T2_Gas_bladder')==0 %This is for results files from previous FluOil versions
+if isfield(ResultsSim, 'T2_Gas_bladder')==0%This is for results files from previous FluOil versions
     T2_Gas_bladder=0;
 else
     T2_Gas_bladder=ResultsSim.T2_Gas_bladder;
@@ -269,10 +267,10 @@ switch val;
         numlines=1;
         defaultanswer = {'100','100'};
         ans1 = inputdlg(prompt,title_text,numlines,defaultanswer);
-        bin=str2num(ans1{1});  scale_factor=str2num(ans1{2});  
+        bin=str2num(ans1{1});  scale_factor=str2num(ans1{2});
         %%
         if T2_Gas_bladder==0 %if larvae mode is disable
-            Distribution_at_hatching(handles,Spawning_Location,bin,scale_factor) %YL jumps to suspension part
+            Distribution_at_hatching(handles,Spawning_Location,bin,scale_factor)
         else
             Distribution_at_hatching(handles,Spawning_Location,bin,scale_factor)
             Distribution_at_Gas_Bladder(handles,Spawning_Location,bin,scale_factor)
@@ -319,10 +317,8 @@ end
 
 %% Eggs in suspension =====================================================================================
 
-%% Where are the eggs when hatching occurs? %% YL shut down
-%TimeIndex=find(time>=round(T2_Hatching*3600));
-%TimeIndex=TimeIndex(1);
-TimeIndex=1;
+%% Where are the eggs when hatching occurs?
+TimeIndex=find(time>=round(T2_Hatching*3600));TimeIndex=TimeIndex(1);
 X_at_hatching(:,1)=X(TimeIndex,:);%in m
 Z_at_hatching(:,1)=Z(TimeIndex,:);
 %% Find the cell where every egg is and determine if is in suspension or settle
@@ -431,8 +427,7 @@ bids=(edges(1:end-1)+edges(2:end))/2;bids=bids';
 
 %% Where are the eggs when hatching occurs?
 TimeIndex=find(time>=round(T2_Hatching*3600));
-%TimeIndex=TimeIndex(1); % YL close
-TimeIndex=TimeIndex(end);
+TimeIndex=TimeIndex(1);
 X_at_hatching(:,1)=X(TimeIndex,:);%in m
 Z_at_hatching(:,1)=Z(TimeIndex,:);
 %% Find the cell where every egg is and determine if is in suspension or settle
@@ -453,20 +448,14 @@ Xsusp=X_at_hatching(Z_at_hatching_H>0.05);
 Xbot=X_at_hatching(Z_at_hatching_H<=0.05);
 %% ========================================================================================================
 
-%% Eggs in suspension 
+%% Eggs in suspension
 Nsusp=histc(Xsusp,edges);Nsusp=Nsusp(1:end-1);%here we dont include numbers greater than the max edge
-if isempty(Xsusp) == 1    %YL
-    Lat_susp = [];
-    Lon_susp = [];
-    Nsusp = [];
-else
-    id=find(bids>=min(Xsusp));id=id(1)-1;
-    id_end=find(bids>=max(Xsusp));id_end=id_end(1);
-    s=bids(id:id_end)/str2double(get(handles.L,'String'));
-    [coordX,coordY,utmzone_out]=UTMVector_Out(utmzone,x,y,s,str2double(get(handles.L,'String')));
-    [Lat_susp,Lon_susp] = utm2deg(coordX,coordY,utmzone_out);
-    Nsusp=Nsusp(id:id_end)*100/size(X_at_hatching,1); 
-end
+id=find(bids>=min(Xsusp));id=id(1)-1;
+id_end=find(bids>=max(Xsusp));id_end=id_end(1);
+s=bids(id:id_end)/str2double(get(handles.L,'String'));
+[coordX,coordY,utmzone_out]=UTMVector_Out(utmzone,x,y,s,str2double(get(handles.L,'String')));
+[Lat_susp,Lon_susp] = utm2deg(coordX,coordY,utmzone_out);
+Nsusp=Nsusp(id:id_end)*100/size(X_at_hatching,1);
 %% Near the bottom
 if isempty(Xbot)  %ZZ in case Xbot is empty
     Nbot=double.empty(0,1);
@@ -475,26 +464,20 @@ if isempty(Xbot)  %ZZ in case Xbot is empty
     Lon_bot=double.empty(0,1);
     Elev_bot=double.empty(0,1);
 else   
-    Nbot=histc(Xbot,edges);Nbot=Nbot(1:end-1); %here we dont include numbers greater than the max edge
-    id=find(bids>min(Xbot));id=id(1)-1;
-    id_end=find(bids>=max(Xbot));id_end=id_end(1);
-    s=bids(id:id_end)/str2double(get(handles.L,'String'));
-    [coordX,coordY,utmzone_out]=UTMVector_Out(utmzone,x,y,s,str2double(get(handles.L,'String')));
-    [Lat_bot,Lon_bot] = utm2deg(coordX,coordY,utmzone_out);
-    Nbot=Nbot(id:id_end)*100/size(X_at_hatching,1);
-%     Elev_bot=zeros(length(Lat_bot),1);
+Nbot=histc(Xbot,edges);Nbot=Nbot(1:end-1);%here we dont include numbers greater than the max edge
+id=find(bids>min(Xbot));id=id(1)-1;
+id_end=find(bids>=max(Xbot));id_end=id_end(1);
+s=bids(id:id_end)/str2double(get(handles.L,'String'));
+[coordX,coordY,utmzone_out]=UTMVector_Out(utmzone,x,y,s,str2double(get(handles.L,'String')));
+[Lat_bot,Lon_bot] = utm2deg(coordX,coordY,utmzone_out);
+Nbot=Nbot(id:id_end)*100/size(X_at_hatching,1);
 end
-
-  if isempty(Xsusp) == 1    %YL 
-    Lat_susp = Lat_bot;
-    Lon_susp = Lon_bot;
-    Nsusp = zeros(length(Lat_bot));
-  end
 %% Percentage of eggs at risk of hatching
 ERH=sum(Nsusp);
 %% Generating the GEplot_3D
 GEplot_3D([pathname get(handles.outputfilename,'String') ' distribution at hatching time'],Lat_susp,Lon_susp,Nsusp*scale_factor,'-g',Lat_bot,Lon_bot,Nbot*scale_factor,'-y',ERH,Spawning_Location,0,'LineWidth',3);
 %% ========================================================================================================
+
 end
 
 function [coordX,coordY,utmzone_out]=UTMVector_Out(utmzone,x,y,s,L);
@@ -658,29 +641,3 @@ end
 %     set(hObject,'BackgroundColor','white');
 % end
 % end
-
-
-% --- Executes on key press with focus on Flip_centerline and none of its controls.
-function Flip_centerline_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to Flip_centerline (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
-end
-
-% --- If Enable == 'on', executes on mouse press in 5 pixel border.
-% --- Otherwise, executes on mouse press in 5 pixel border or over Flip_centerline.
-function Flip_centerline_ButtonDownFcn(hObject, eventdata, handles)
-% hObject    handle to Flip_centerline (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-end
-
-% --- Executes during object creation, after setting all properties.
-function Flip_centerline_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Flip_centerline (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-end
