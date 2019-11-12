@@ -18,7 +18,7 @@
 
 function varargout = FluOil(varargin)
 
-% Last Modified by GUIDE v2.5 08-Jan-2018 10:14:21
+% Last Modified by GUIDE v2.5 09-Jul-2019 16:09:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -255,11 +255,13 @@ if strcmp(Batchmode,'on')
         handles.userdata.RunNumber = k;
         
 %%ZZ If there is a batch input file, use information from the file
-        if size(inputdata.Batch.Batchinputfile_hdr) == [1 8] % If there is a batch input file
+        if size(inputdata.Batch.Batchinputfile_hdr) == [1 10] % If there is a batch input file
             handles.userdata.Num_Eggs=inputdata.Batch.Batchinputfile(k,5);
             handles.userdata.Xi=inputdata.Batch.Batchinputfile(k,2);
             handles.userdata.Zi=inputdata.Batch.Batchinputfile(k,4);
             handles.userdata.Totaltime=inputdata.Batch.Batchinputfile(k,7);
+			handles.userdata.Vs=inputdata.Batch.Batchinputfile(k,9);
+			handles.userdata.Tauc=inputdata.Batch.Batchinputfile(k,10);			
             
             if inputdata.Batch.Batchinputfile(k,3) > 0 % If Yi is known. 
                 handles.userdata.Yi=inputdata.Batch.Batchinputfile(k,3);
@@ -348,6 +350,11 @@ guidata(hObject, handles);
 % set(handles.Batch_button,'Value',1)
 % %display(get(handles.popup_EggsChar,'Value'))
 % guidata(hObject, handles);
+end
+
+% --------------------------------------------------------------------
+function Analyze_Results_CreateFcn(hObject, eventdata, handles)
+results();
 end
 
 % --------------------------------------------------------------------
@@ -701,5 +708,90 @@ switch Batchmode %:Updated TG & LJ 2/28/2017
         set(handles.Batch, 'Checked','off')
     case 'off'
         set(handles.Batch, 'Checked','on')
+end
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function popupDiffusivity_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupDiffusivity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+% --- Executes on selection change in popupDiffusivity.
+function popupDiffusivity_Callback(hObject, eventdata, handles)
+% hObject    handle to popupDiffusivity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupDiffusivity contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupDiffusivity
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over popupDiffusivity.
+end
+
+function popupDiffusivity_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to popupDiffusivity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+end
+
+% --- Executes on key press with focus on popupDiffusivity and none of its controls.
+function popupDiffusivity_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to popupDiffusivity (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+end
+
+% --- Executes during object creation, after setting all properties.
+function Xi_input_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Xi_input (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+% --- Executes during object creation, after setting all properties.
+function Yi_input_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Yi_input (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function Zi_input_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Zi_input (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
 end

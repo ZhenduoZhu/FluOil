@@ -248,7 +248,7 @@ fprintf(fp,'\n');
 if (linestyle=='-')
     if T2_Gas_bladder==0 % If user did not simulate larvae stage...
         fprintf(fp,'<name>%s</name>\n',['Longitudinal distribution of eggs at hatching time ' char(name)]);
-        fprintf(fp,'<description>Longitudinal distribution of eggs (using GEplot.m and the VMT version-GEplot_3D.m)</description>\n');
+        fprintf(fp,'<description>Longitudinal distribution of OPAs (using GEplot.m and the VMT version-GEplot_3D.m)</description>\n');
         %%
         fprintf(fp,'    <Placemark>\n');
         fprintf(fp,'      <description><![CDATA[Longitudinal distribution of eggs in suspension]]></description>\n');
@@ -293,7 +293,9 @@ if (linestyle=='-')
         idmax=find(Elev_susp==max(Elev_susp));idmax=idmax(1);
         %
         fprintf(fp,'    <Placemark>\n');
-        fprintf(fp,'<name>%s</name>\n',['Approximately ' num2str(round((ERH*10)/10)) '% of eggs are at risk of hatching']);
+%        %YL
+%        fprintf(fp,'<name>%s</name>\n',['Approximately '
+%        num2str(round((ERH*10)/10)) '% of eggs are at risk of hatching']);
         fprintf(fp,'    <Style>\n');
         fprintf(fp,'    <IconStyle>\n');
         fprintf(fp,'    <scale>0</scale>\n');
@@ -390,7 +392,7 @@ end
 
 %%=======================================================================================================
 fprintf(fp,'    <Placemark>\n');
-fprintf(fp,'<name>%s</name>\n',['Spawning location']);
+fprintf(fp,'<name>%s</name>\n',['Longitudinal distribution of OPAs']); %YL
 fprintf(fp,'    <Style>\n');
 fprintf(fp,'    <IconStyle>\n');
 fprintf(fp,'    <Icon>\n');

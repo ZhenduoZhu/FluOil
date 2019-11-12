@@ -159,23 +159,23 @@ else
             return
         end %Checking file extension
         try
-            handles.userdata.Batchinputfile = Batchinputfile(:,1:8);
-            handles.userdata.Batchinputfile_hdr = Batchinputfile_hdr(:,1:8);
-            if size(Batchinputfile_hdr) ~= [1 8]
+            handles.userdata.Batchinputfile = Batchinputfile(:,10);
+            handles.userdata.Batchinputfile_hdr = Batchinputfile_hdr(:,1:10);
+            if size(Batchinputfile_hdr) ~= [1 10]
                 ed = msgbox('Incorrect Batch input file, please select another file','FluOil Error','Error');
                 set(ed, 'WindowStyle', 'modal');
                 uiwait(ed);
                 return
-            elseif sum(strcmp(Batchinputfile_hdr(:,1:8),{'Egg_ID','StartingX_m','StartingY_m','StartingZ_m','Num_OPAs','StartingTime','SimulationTime_hr','Temp_C'}))<8
+            elseif sum(strcmp(Batchinputfile_hdr(:,1:10),{'Egg_ID','StartingX_m','StartingY_m','StartingZ_m','Num_OPAs','StartingTime','SimulationTime_hr','Temp_C','Vs_mm/s','Tauc_Pa'}))<10 %YL add Vs and Tauc in input file in batchmode
                 ed = msgbox('Incorrect Batch input file, please select another file','FluOil Error','Error');
                 set(ed, 'WindowStyle', 'modal');
                 uiwait(ed);
                 return
             end
-            set(handles.Batchinputfile,'Data',handles.userdata.Batchinputfile(:,1:8));
+            set(handles.Batchinputfile,'Data',handles.userdata.Batchinputfile(:,1:10));
             Batchin_DataPlot(handles);
         catch
-            if size(Batchinputfile,2) ~= 8
+            if size(Batchinputfile,2) ~= 10
                 ed = errordlg('Please fill all the data required in the Batch input file, and load the file again','Error');
                 set(ed, 'WindowStyle', 'modal');
                 uiwait(ed);
