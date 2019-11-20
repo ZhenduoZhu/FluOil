@@ -7,22 +7,16 @@
 % =========================================================================
 % ------------------------------------------------------------------------%
 % This is the main function of the FluOil model, this function gets input %
-% data, sets the virtual spawning event, performs egg movement and        %
-% generates results.                                                      %
+% data, sets the oil spill event, performs Oil-Particle Aggregate (OPA)   %
+% movement and generates results.                                         %
 % ------------------------------------------------------------------------%
 %                                                                         %
 % ------------------------------------------------------------------------%
-%   Created by      : Tatiana Garcia                                      %
-%   Last Modified   : July 29, 2016                                        %
+%   Modified from FluEgg that is originially developed by Tatiana Garcia  %
+%   Last Modified   : February 26, 2019                                   %
 % ------------------------------------------------------------------------%
-%                                                                         %
-% Copyright 2016 Tatiana Garcia                                           %
 % ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::%
 % With nested functions and single precision and uint8 data types         %
-%
-% The mortality model is under development, there are a lot of lines making
-% reference to alive or dead eggs, everything works as this module was   %
-% already implemented. TG                                                 %
 
 function [minDt,CheckDt,Exit]=FluOilgui(~, ~,handles,CheckDt)
 
@@ -101,7 +95,7 @@ try
     % Spawning Start Time
     %Spawning date and time in number  
     %%ZZ batch simulation
-    %ZZ if size(HECRAS_data.Batch.Batchinputfile_hdr) == [1 8] % If there is a batch input file
+    %ZZ if size(HECRAS_data.Batch.Batchinputfile_hdr) == [1 10] % If there is a batch input file
     try
         SpawningTime = HECRAS_data.Batch.Batchinputfile(EggID,6); %If there is a batch input file, read from a batch input file
     catch
@@ -287,6 +281,14 @@ switch str{val};
             Rhoe_ref=Rhoe_ref(end:-1:1);
         end
 end % Do we use constant diameter and egg density? or do we use grow development time series
+
+%%YL If there is a batch input file, use Vs and Tauc information from the file
+    inputdata=getappdata(hFluOilGui,'inputdata');
+if size(inputdata.Batch.Batchinputfile_hdr) == [1 10] % If there is a batch input file
+        Vs = handles.userdata.Vs; %YL update settling velocity in mm/s
+		Tauc = handles.userdata.Tauc; %YL update critical shear stress in Pa
+		Ustarc = sqrt(Tauc/1000.0); %YL update critical shear velocity
+end
 
 %% Calculate water density
 Rhow = density(Temp); %Here we calculate the water density in every cell
@@ -861,7 +863,7 @@ Jump;
             egg_index=c(i);
             C=find(X(t,egg_index)<CumlDistance*1000,1,'first'); %Find the new cell where eggs are located
             %%=====================================================================
-            if isempty(C)  % If the egg is outside the domain
+            if isempty(C)  % If the OPA is outside the domain
 				Cell=cell(egg_index);
 				alive(t,egg_index) = 0;
 %ZZ                ed=errordlg([{'The cells domain have being exceeded.'},{'Please extend the River the domain in the River input file.'},{'Advice:'},{'1.  If your waterbody ends in a lake and you expect the eggs to settle, you can add an additional cell with Vmag=u*=very small value=1e-5m/s.'},{'2.  If your waterbody ends in a stream where you do not expect settling, you need to extend your domain by adding an additional cell with the stream hydrodynamics.'},{'3.  If the hydrodynamics after the last cell are approximately constant, you can extrapolate your domain by extending the cumulative distance of the last cell of your domain, use with caution.'}],'Error');
@@ -871,9 +873,12 @@ Jump;
 %ZZ				pause(2)
 %ZZ                Exit=1;
 %ZZ                return
+%YL show a warning window and close it automatically after 3s
                  if OPApassDS==0
-                     msgbox([{'Some OPAs have passed the downstream boundary'},{'Please review river input file or decrease the simulation time if you want all OPAs to be inside study domain.'}],'FluOil message','Warn');
-                     OPApassDS=1;
+                     hmsg = msgbox([{'Some OPAs have passed the downstream boundary'},{'Please review river input file or decrease the simulation time if you want all OPAs to be inside study domain.'}],'FluOil message','Warn');
+                     start(timer('timerFcn',@(obj,~)close(hmsg),...
+					'StartDelay',3,'stopFcn',@(obj,~)delete(obj)))
+					 OPApassDS=1;
                  end
                 %% Continue in the drift ================================================
             else
@@ -1009,7 +1014,7 @@ Jump;
         
         %%ZZ batch simulation
         if strcmp(get(handles.Batch,'Checked'),'on')
-        if size(HECRAS_data.Batch.Batchinputfile_hdr) == [1 8] % If there is a batch input file
+        if size(HECRAS_data.Batch.Batchinputfile_hdr) == [1 10] % If there is a batch input file
             %Read from a batch input file, temperature is constant in time
             %and space for one egg but differ between different simulated eggs in
             %batch simulation

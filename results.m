@@ -12,7 +12,7 @@
 % Copyright 2016 Tatiana Garcia
 %:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::%
 function varargout = results(varargin)
-% Last Modified by GUIDE v2.5 22-Feb-2017 17:55:39
+% Last Modified by GUIDE v2.5 19-Jul-2019 10:33:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1198,3 +1198,42 @@ set(handles.MenuMetric, 'Checked','off')
 set(handles.MenuEnglish,'Checked','on')
 end
 
+
+
+% --- Executes during object creation, after setting all properties.
+function text2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to text2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+end
+
+% --- Executes on button press in frame1.
+function frame1_Callback(hObject, eventdata, handles)
+% hObject    handle to frame1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function text1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to text1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+end
+
+% --- Executes during object creation, after setting all properties.
+function LoadResults_panel1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to LoadResults_panel1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+end
+
+% --- Executes on button press in Postprocessing_option.
+function Postprocessing_option_Callback(hObject, eventdata, handles)
+% hObject    handle to Postprocessing_option (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of Postprocessing_option
+end
