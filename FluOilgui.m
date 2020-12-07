@@ -284,7 +284,8 @@ end % Do we use constant diameter and egg density? or do we use grow development
 
 %%YL If there is a batch input file, use Vs and Tauc information from the file
     inputdata=getappdata(hFluOilGui,'inputdata');
-if size(inputdata.Batch.Batchinputfile_hdr) == [1 10] % If there is a batch input file
+if strcmp(get(handles.Batch,'Checked'),'on') % If there is a batch input file
+    %if size(inputdata.Batch.Batchinputfile_hdr) == [1 10] % If there is a batch input file
         Vs = handles.userdata.Vs; %YL update settling velocity in mm/s
 		Tauc = handles.userdata.Tauc; %YL update critical shear stress in Pa
 		Ustarc = sqrt(Tauc/1000.0); %YL update critical shear velocity

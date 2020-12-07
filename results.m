@@ -12,7 +12,7 @@
 % Copyright 2016 Tatiana Garcia
 %:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::%
 function varargout = results(varargin)
-% Last Modified by GUIDE v2.5 19-Jul-2019 10:33:49
+% Last Modified by GUIDE v2.5 04-Dec-2020 17:05:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -37,7 +37,7 @@ end
 % --- Executes just before Results is made visible.
 function results_OpeningFcn(hObject, eventdata, handles, varargin)
 diary('./results/FluOil_LogFile.txt')
-axes(handles.bottom); imshow('asiancarp.png');
+%ZZ-12/4/2020 axes(handles.bottom); imshow('asiancarp.png');
 button_load_picture(hObject, eventdata, handles);
 handles.Results=0;
 handles.output = hObject;
@@ -140,28 +140,28 @@ switch Tab
             if  strcmp(Postprocessing_option(i),'Distribution of OPAs over the water column')
                 
                 % Construct a questdlg with two options
-                choice = questdlg('Do you want to plot the vertical distribution of eggs at:', ...
+                choice = questdlg('Do you want to plot the vertical distribution of OPAs at:', ...
                     'Plot option','a given time?','a given distance?','a given time?');
                 % Handle response
                 switch choice
                     case 'a given time?'
-                        Distribution_of_Eggs_at_hatching();
+                        Distribution_of_OPAs_at_hatching();
                     case 'a given distance?'
-                        Distribution_of_Eggs_at_a_distance();
+                        Distribution_of_OPAs_at_a_distance();
                 end
             end
             if  strcmp(Postprocessing_option(i),'OPAs vertical concentration distribution')
-                Egg_vertical_concentration();
+                OPA_vertical_concentration();
             end
         end
         %%=================================================================================================
     case 'Longitudinal'
         for i=1:sum(selected)
             if  strcmp(Postprocessing_option(i),'Longitudinal distribution')
-                Longitudinal_distribution_of_eggs_at_time_t();
+                Longitudinal_distribution_of_OPAs_at_time_t();
             end
             if  strcmp(Postprocessing_option(i),'Vertical position of the centroid of the OPAs mass')
-                egg_mass_centroid_Vs_distance();
+                OPA_mass_centroid_Vs_distance();
             end
             if  strcmp(Postprocessing_option(i),'Google Earth utility')
                 Google_Earth_utility();
@@ -187,7 +187,7 @@ switch Tab
                 Minigui_Video();
             end
             if  strcmp(Postprocessing_option(i),'Calculate the percentage of OPAs at a given location, depth, and time')
-                PercentageEggs_location_time();
+                PercentageOPAs_location_time();
             end
             
         end
@@ -207,7 +207,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 end
 
-function egg_mass_centroid_Vs_distance()
+function OPA_mass_centroid_Vs_distance()
 ed=cellslabel();
 uiwait(ed);
 %%
@@ -226,8 +226,43 @@ end
 [label_on,Temp,time,Xi,T2_Hatching]=load_data; %Updated 9/3/2015 TG
 %========================================
 %% Calculate means
-[meanZ_H,meanX]=load_data_and_calculate_means;
-
+%ZZ-12/4/2020 [meanZ_H,meanX]=load_data_and_calculate_means;
+        %% Load data
+        handleResults=getappdata(0,'handleResults');
+        ResultsSim=getappdata(handleResults,'ResultsSim');
+        X=ResultsSim.X;
+        Z=ResultsSim.Z;
+        CumlDistance=ResultsSim.CumlDistance;
+        Depth=ResultsSim.Depth;
+        %%
+        Cell=zeros(size(X));
+        h=zeros(size(X));
+        for e=1:size(X,2)
+            C=find(X(1,e)<CumlDistance*1000);Cell(1,e)=C(1);
+            h(1,e)=Depth(Cell(1,e)); %m
+        end
+        for t=2:size(X,1)
+            Cell(t,:)=Cell(t-1,:);
+            h(t,:)=Depth(Cell(t-1,:));%if the OPAs are still in the same cell use the same characteristic as previous time step
+            [c,~]=find(X(t,:)'>(CumlDistance(Cell(t-1,:),1)*1000));
+            for j=1:length(c)
+                if X(t,c(j))<CumlDistance(end)*1000 % If the OPAs are in the last cell
+                    C=find(X(t,c(j))<CumlDistance*1000);Cell(t,c(j))=C(1);%cell is the cell were an OPA is
+                    h(t,c(j))=Depth(Cell(t,c(j))); %m
+                end
+            end
+        end
+        clear Cell C c i e
+        Z_H=(Z+h)./h;
+        clear h
+        meanX=mean(X,2);
+        %% Mean of alive eggs
+        % for t=1:size(X,1)
+        %     meanX(t)=mean(X(t,alive(t,:)==1));
+        % end
+        meanZ_H=mean(Z_H,2);
+        %STDZ_H=std(Z_H,1,2);
+%ZZ-12/4/2020-end
 %%
 set(0,'Units','pixels') ;
 scnsize = get(0,'ScreenSize');
@@ -339,11 +374,11 @@ diary off
         end
         for t=2:size(X,1)
             Cell(t,:)=Cell(t-1,:);
-            h(t,:)=Depth(Cell(t-1,:));%if the eggs are still in the same cell use the same characteristic as previous time step
+            h(t,:)=Depth(Cell(t-1,:));%if the OPAs are still in the same cell use the same characteristic as previous time step
             [c,~]=find(X(t,:)'>(CumlDistance(Cell(t-1,:),1)*1000));
             for j=1:length(c)
-                if X(t,c(j))<CumlDistance(end)*1000 % If the eggs are in the last cell
-                    C=find(X(t,c(j))<CumlDistance*1000);Cell(t,c(j))=C(1);%cell is the cell were an egg is
+                if X(t,c(j))<CumlDistance(end)*1000 % If the OPAs are in the last cell
+                    C=find(X(t,c(j))<CumlDistance*1000);Cell(t,c(j))=C(1);%cell is the cell were an OPA is
                     h(t,c(j))=Depth(Cell(t,c(j))); %m
                 end
             end
@@ -370,7 +405,7 @@ diary off
         T2_Hatching=ResultsSim.T2_Hatching;
     end %load_data
 %%
-end %Function egg mass centroid
+end %Function mass centroid
 
 function [] = temporal_and_spatial_dispersion()
 %==========================================================================
@@ -427,12 +462,12 @@ PlotingZ()
         end
         for t=2:size(X,1)
             Cell(t,:)=Cell(t-1,:);
-            h(t,:)=Depth(Cell(t-1,:));%if the eggs are still in the same cell use the same characteristic as previous time step
-            W(t,:)=Width(Cell(t-1,:));%if the eggs are still in the same cell use the same characteristic as previous time step
+            h(t,:)=Depth(Cell(t-1,:));%if the OPAs are still in the same cell use the same characteristic as previous time step
+            W(t,:)=Width(Cell(t-1,:));%if the OPAs are still in the same cell use the same characteristic as previous time step
             [c,~]=find(X(t,:)'>(CumlDistance(Cell(t-1,:))*1000));
             for j=1:length(c)
                 if X(t,c(j))<CumlDistance(end)*1000
-                    C=find(X(t,c(j))<CumlDistance*1000);Cell(t,c(j))=C(1);%cell is the cell were an egg is
+                    C=find(X(t,c(j))<CumlDistance*1000);Cell(t,c(j))=C(1);%cell is the cell were an OPA is
                     h(t,c(j))=Depth(Cell(t,c(j))); %m
                     W(t,c(j))=Width(Cell(t,c(j))); %m
                 end
@@ -526,7 +561,7 @@ PlotingZ()
 %%
 end% temporal and spatial dispersion
 
-function Distribution_of_Eggs_at_hatching()
+function Distribution_of_OPAs_at_hatching()
 %% Load data
 handleResults=getappdata(0,'handleResults');
 ResultsSim=getappdata(handleResults,'ResultsSim');
@@ -562,17 +597,17 @@ switch choice
 end
 end
 %This was designed for time to hatch, now we use it for different times
-    %% Percentage of eggs in the water column
+    %% Percentage of OPAs in the water column
     %% finding the normalized location at hatching time
     tindex=find(time>=round(TimeToHatch*3600));tindex=tindex(1);
     Z_at_hatching=Z(tindex,:);Z_at_hatching=Z_at_hatching';
     X_at_hatching=X(tindex,:);X_at_hatching=X_at_hatching';
-    %% finding water depth at each egg location
+    %% finding water depth at each OPA location
     Cell=zeros(size(Z_at_hatching));
     h=zeros(size(Z_at_hatching));
     for e=1:length(Z_at_hatching)
         C=find(X_at_hatching(e)<CumlDistance*1000);
-        if X_at_hatching(e)<CumlDistance(end)*1000 % If the eggs are in the last cell
+        if X_at_hatching(e)<CumlDistance(end)*1000 % If the OPAs are in the last cell
             Cell(e)=C(1);
         else
             Cell(e)=length(CumlDistance);
@@ -625,7 +660,7 @@ end
 diary off
 end
 
-function Distribution_of_Eggs_at_a_distance()
+function Distribution_of_OPAs_at_a_distance()
 ed=downDist();
 uiwait(ed);
 handleResults=getappdata(0,'handleResults');
@@ -645,7 +680,7 @@ cell=find((CumlDistance)*1000>=dX);cell=cell(1);
 h=Depth(cell);
 %%
 c=0;
-check=0;%Have all the eggs arrive to distance X???
+check=0;%Have all the OPAs arrive to distance X???
 for i=1:size(X,2)
     tind=find(X(:,i)>=dX);
     if length(tind)>=1
@@ -706,7 +741,7 @@ else
     %% Message
     h = msgbox([num2str(sum(N)) ' OPAs passed by ' num2str(dX/1000) ' km during the simulation time'],'FluOil Message');
 end
-end %distribution of eggs at a distance
+end %distribution of OPAs at a distance
 
 
 function travel_time()
@@ -731,7 +766,7 @@ cell=find((CumlDistance)*1000>=dX);cell=cell(1);
 h=Depth(cell);
 %%
 c=0;
-check=0;%Have all the eggs arrive to distance X???
+check=0;%Have all the OPAs arrive to distance X???
 for i=1:size(X,2)
     tind=find(X(:,i)>=dX);
     if length(tind)>=1
@@ -759,7 +794,7 @@ else
     xlabel('Arrival time [h]','FontName','Arial','FontSize',12);
     ylabel('Distance [Km]','FontName','Arial','FontSize',12);
     set(gca,'TickDir','in','TickLength',[0.021 0.021],'FontName','Arial','FontSize',12)
-    %% Eggs in suspension
+    %% OPAs in suspension
     Nsusp=t_Dist_X(Z_Dist_X>0.05);
     Nbot=t_Dist_X(Z_Dist_X<0.05);
     %%
@@ -819,8 +854,8 @@ else
         %         plot(TimeToHatch,ylimits(end)*0.8,'MarkerFaceColor',[208 35 122]/255,'MarkerEdgeColor',[208 35 122]/255,'Marker','<')
         %         plot(edges(end),ylimits(end)*0.8,'MarkerFaceColor',[208 35 122]/255,'MarkerEdgeColor',[208 35 122]/255,'Marker','>')
         %         plot([edges(end) edges(end)],[0 ylimits(end)*0.8],'color',[128 128 128]/255,'LineStyle',':','linewidth',1)
-        %         %text(TimeToHatch+(edges(end)-TimeToHatch)/2,ylimits(end)*0.88, {['Approximately ' num2str(5*round(PercentHatching/5)),'% of eggs are'],' at risk of hatching'},'HorizontalAlignment','center','FontName','Arial')
-        %         text(double(TimeToHatch+(edges(end)-TimeToHatch)/2),ylimits(end)*0.88, {['Approximately ' num2str(round((PercentHatching*10)/10)),'% of eggs are'],' at risk of hatching'},'HorizontalAlignment','center','FontName','Arial')
+        %         %text(TimeToHatch+(edges(end)-TimeToHatch)/2,ylimits(end)*0.88, {['Approximately ' num2str(5*round(PercentHatching/5)),'% of OPAs are'],' at risk of hatching'},'HorizontalAlignment','center','FontName','Arial')
+        %         text(double(TimeToHatch+(edges(end)-TimeToHatch)/2),ylimits(end)*0.88, {['Approximately ' num2str(round((PercentHatching*10)/10)),'% of OPAs are'],' at risk of hatching'},'HorizontalAlignment','center','FontName','Arial')
         %
         %     end
     end
@@ -830,14 +865,24 @@ end
 end% travel time
 
 
-function Longitudinal_distribution_of_eggs_at_time_t()
+function Longitudinal_distribution_of_OPAs_at_time_t()
 %Display Sub-GUI-->at what time do you want to display the longitudinal
 %distribution of eggs or larvae?
-ed = Longitudinal_Dist_Eggs();
+ed = Longitudinal_Dist_OPAs();
 uiwait(ed);
 
 %% Load data from Results Gui
-[X,Z,Y,CumlDistance,Depth,time,Width]=load_data; %TG 05/15
+%ZZ-12/4/2020 [X,Z,Y,CumlDistance,Depth,time,Width]=load_data; %TG 05/15
+handleResults=getappdata(0,'handleResults');
+ResultsSim=getappdata(handleResults,'ResultsSim');
+X=ResultsSim.X;
+Z=ResultsSim.Z;
+Y=ResultsSim.Y; %TG 05/15
+time=ResultsSim.time;
+CumlDistance=ResultsSim.CumlDistance;
+Depth=ResultsSim.Depth;
+Width=ResultsSim.Width; %TG 05/15
+%ZZ-12/4/2020-end
 %If user does not press the continue button (if user closes gui)
 continuee=getappdata(handleResults, 'continue'); 
 if continuee==0
@@ -865,7 +910,6 @@ end
     function Distribution_eggs_hatch(SetTime)
         % gets results data
         handleResults=getappdata(0,'handleResults');
-        
         % If error in SetTime input
         if isempty(SetTime)
             return
@@ -881,9 +925,9 @@ end
         %%
         Cell=zeros(size(X_at_Time));
         h=zeros(size(X_at_Time));
-        %Calculate locale hydraulic conditions experienced by every egg
+        %Calculate locale hydraulic conditions experienced by every OPA
         for e=1:size(X_at_Time,1)
-            if X_at_Time(e)>CumlDistance(end)*1000 % If the eggs are in the last cell
+            if X_at_Time(e)>CumlDistance(end)*1000 % If the OPAs are in the last cell
                 Cell(e)=length(CumlDistance);
             else
                 Cell(e)=find(X_at_Time(e)<CumlDistance*1000,1,'first');
@@ -925,20 +969,20 @@ end
         %% Plot
         set(0,'Units','pixels') ;
         scnsize = get(0,'ScreenSize');
-        %h=figure('Name','Longitudinal distribution of the eggs at a given time','Color',[1 1 1],...
+        %h=figure('Name','Longitudinal distribution of the OPAs at a given time','Color',[1 1 1],...
             %'position',[scnsize(3)/2 scnsize(4)/2.6 scnsize(3)/2.1333 scnsize(4)/2]);
             h=figure('Name','Longitudinal distribution of the OPAs at a given time','Color',[1 1 1],...
             'position',[scnsize(3)/2 scnsize(4)/2.6 scnsize(3)/2.1333 scnsize(4)/2]);
         subaxis(1,1,1,'MR',0.1,'ML',0.095,'MB',0.12,'MT',0.05);
         %%
         cdf_Nsusp=cumsum(Nsusp*100/size(X_at_Time,1));
-        percentage_of_Eggs=[Nbot Nsusp]*100/size(X_at_Time,1);
-        bar1=bar(bids,percentage_of_Eggs,1,'stacked');
+        percentage_of_OPAs=[Nbot Nsusp]*100/size(X_at_Time,1);
+        bar1=bar(bids,percentage_of_OPAs,1,'stacked');
         set(bar1(2),'FaceColor',[0.3804,0.8118,0.8980],'EdgeColor',[0 0 0]);
         set(bar1(1),'FaceColor',[0.6,0.6,0.6],'EdgeColor',[0 0 0]);
         %--Cust0mize plot -----------------------------------------------------
         position_axes1= get(gca,'position');
-               %[Convert_km_to_miles,xlabel_text,StringStats]=setupUnits(X_at_Time(Z_at_Time_H>0.05));%Calculate stats for eggs in susp.
+               %[Convert_km_to_miles,xlabel_text,StringStats]=setupUnits(X_at_Time(Z_at_Time_H>0.05));%Calculate stats for OPAs in susp.
         [Convert_km_to_miles,xlabel_text,StringStats]=setupUnits(X_at_Time,Xsuspmean,Xbotmean);
         xStep=ceil((Convert_km_to_miles*(k*ds+max(max(X_at_Time)))/4)/10)*10;%in miles
         %xaxisticks=[0:ceil(xStep/10)*10:5*ceil(xStep/10)*10];
@@ -1006,7 +1050,7 @@ end
         end
         edges=0:ds:CumlDistance(end)+0.001;
         bids=(edges(1:end-1)+edges(2:end))/2;bids=bids';
-        % Number of eggs in each bin
+        % Number of OPAs in each bin
         N=histc(X_at_GBI,edges);N=N(1:end-1);%here we dont include numbers greater than the max edge
         %% Plot
         %---Settings-------------------------------------------------------
@@ -1016,8 +1060,8 @@ end
             'position',[scnsize(3)/2 scnsize(4)/2.6 scnsize(3)/2.1333 scnsize(4)/2]);
         subaxis(1,1,1,'MR',0.1,'ML',0.095,'MB',0.12,'MT',0.05);
         %---------------------------------------------------------------
-        percentage_of_Eggs=N*100/size(X_at_GBI,1);
-        bar1=bar(bids,percentage_of_Eggs,1);
+        percentage_of_OPAs=N*100/size(X_at_GBI,1);
+        bar1=bar(bids,percentage_of_OPAs,1);
         %--Cust0mize plot -----------------------------------------------------
         set(bar1,'FaceColor',[1,0,1]);
         [Convert_km_to_miles,xlabel_text,StringStats]=setupUnits(X_at_GBI,Xsuspmean,Xbotmean);
@@ -1143,8 +1187,6 @@ guidata(hObject, handles);
 
 end
 
-
-
 % --------------------------------------------------------------------
 function Settings_Menu_results_Callback(hObject, eventdata, handles)
 % Empty
@@ -1198,8 +1240,6 @@ set(handles.MenuMetric, 'Checked','off')
 set(handles.MenuEnglish,'Checked','on')
 end
 
-
-
 % --- Executes during object creation, after setting all properties.
 function text2_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text2 (see GCBO)
@@ -1213,7 +1253,6 @@ function frame1_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 end
-
 
 % --- Executes during object creation, after setting all properties.
 function text1_CreateFcn(hObject, eventdata, handles)

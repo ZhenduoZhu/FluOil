@@ -266,7 +266,7 @@ zt=Videodata.zt;
             bar=findobj(gcf,'Tag','Colorbar');
             set(bar,'Position',[0.73 0.03 0.25 0.016]);
             hold off
-            title(['Time=',num2str(round((time(round(t/Dt+1))/3600)*10)/10),' hours','   ','Egg diameter=',num2str(round(D(round(t/Dt+1))*10)/10),' mm'],'FontSize',fontsize)
+            title(['Time=',num2str(round((time(round(t/Dt+1))/3600)*10)/10),' hours','   ','OPA diameter=',num2str(round(D(round(t/Dt+1))*10)/10),' mm'],'FontSize',fontsize)
             %%
             xlim([0 CumlDistance(Fcell)]);
             ylim([0 max(Width(1:Fcell))]);
